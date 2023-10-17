@@ -3,15 +3,15 @@ import matplotlib.pyplot as plt
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 
-# กำหนด universe (universe of discourse) ของ temperature, fuel, และ power
+# กำหนด universe (universe of discourse) ของ temprature, fuel, และ power
 temperature = ctrl.Antecedent(np.linspace(10, 100, 101), 'temperature')
 fuel = ctrl.Antecedent(np.linspace(0, 100, 101), 'fuel')
-power = ctrl.Consequent(np.linspace(0, 100, 101), 'power')
+power = ctrl.Consequent(np.linspace(0, 100,101), 'power')
 
 # กำหนด membership functions ของ temperature
-temperature['low'] = fuzz.trimf(temperature.universe, [10, 20, 40])
-temperature['medium'] = fuzz.trimf(temperature.universe, [20, 50, 80])
-temperature['high'] = fuzz.trimf(temperature.universe, [60, 80, 100])
+temperature['low'] = fuzz.trapmf(temperature.universe, [0, 0, 25,50])
+temperature['medium'] = fuzz.trimf(temperature.universe, [25, 50, 75])
+temperature['high'] = fuzz.trapmf(temperature.universe, [50, 75, 100,100])
 
 # กำหนด membership functions ของ fuel
 fuel['low'] = fuzz.trimf(fuel.universe, [0, 20, 40])
@@ -19,9 +19,9 @@ fuel['medium'] = fuzz.trimf(fuel.universe, [30, 50, 70])
 fuel['high'] = fuzz.trimf(fuel.universe, [60, 80, 100])
 
 # กำหนด membership functions ของ power
-power['low'] = fuzz.trimf(power.universe, [0, 20, 40])
-power['medium'] = fuzz.trimf(power.universe, [30, 50, 70])
-power['high'] = fuzz.trimf(power.universe, [60, 80, 100])
+power['low'] = fuzz.gaussmf(power.universe, 10, 20)  # ช่วงต่ำ (Low)
+power['medium'] = fuzz.gaussmf(power.universe, 50, 20)  # ช่วงกลาง (Medium)
+power['high'] = fuzz.gaussmf(power.universe, 90, 20)  # ช่วงสูง (High)
 
 # กำหนดความสัมพันธ์ระหว่าง temperature และ fuel กับ power โดยใช้กฎ fuzzy
 rule1 = ctrl.Rule(temperature['low'] & fuel['low'], power['low'])
@@ -41,11 +41,11 @@ fuzzy_system = ctrl.ControlSystem([rule1, rule2, rule3, rule4, rule5, rule6, rul
 fuzzy_system = ctrl.ControlSystemSimulation(fuzzy_system)
 
 # กำหนดอินพุทเป็นค่า temperature และ fuel ที่ต้องการ
-targetTemp = float(input('Enter Target Temperature (10-100): '))
+Temp = float(input('Enter current Temperature (10-100): '))
 targetfuel = float(input('Enter Target Fuel Level (0-100): '))
 
 # กำหนดอินพุทในระบบ Fuzzy Logic
-fuzzy_system.input['temperature'] = targetTemp
+fuzzy_system.input['temperature'] = Temp
 fuzzy_system.input['fuel'] = targetfuel
 
 # ประมวลผลระบบ Fuzzy
@@ -60,7 +60,7 @@ fuel.view(sim=fuzzy_system)
 power.view(sim=fuzzy_system)
 
 # เพิ่มเส้นแนวตั้งที่ temperature และ fuel ที่ใช้
-plt.axvline(x=targetTemp, color='red', linestyle='--', label='temperature')
+plt.axvline(x=Temp, color='red', linestyle='--', label='temperature')
 plt.axvline(x=targetfuel, color='blue', linestyle='--', label='fuel')
 plt.legend()
 plt.show()
